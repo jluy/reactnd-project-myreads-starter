@@ -3,29 +3,36 @@ import PropTypes from 'prop-types'
 
 class Book extends Component {
     static propTypes = {
-        cover_location: PropTypes.string.isRequired,
-        title: PropTypes.string.isRequired,
-        authors: PropTypes.string.isRequired,
-        cover_width: PropTypes.number,
-        cover_height: PropTypes.number,
         bookcase: PropTypes.object.isRequired,
-        bookshelf: PropTypes.string.isRequired
+        bookInfo: PropTypes.object.isRequired,
+        onUpdateBookcase: PropTypes.func.isRequired
     }
 
     render() {
-        const { cover_location, title, authors, cover_width, cover_height, bookcase, bookshelf} = this.props
+        const {
+            bookInfo,
+            bookcase,
+            onUpdateBookcase
+        } = this.props
         return (
             <li>
                 <div className="book">
                     <div className="book-top">
                         <div className="book-cover"
-                             style={{ width: cover_width || 128, height: cover_height || 192, backgroundImage: `url(" ${cover_location}"`}}></div>
+                             style={{width: 128,height: 192,backgroundImage:`url(" ${bookInfo.cover_location}"`}}>
+                        </div>
                         <div className="book-shelf-changer">
-                            <select defaultValue={bookshelf}>
+                            <select
+                                value={bookInfo.shelfLocation}
+                                onChange={ (e) => onUpdateBookcase(bookInfo, e.target.value)}
+                            >
                                 <option value="none" disabled>Move to...</option>
                                 {
                                     Object.keys(bookcase).map(shelf => (
-                                        <option key={shelf} value={shelf}>{bookcase[shelf].bookshelfTitle} </option>
+                                        <option
+                                            key={shelf}
+                                            value={shelf}
+                                        >{bookcase[shelf].bookshelfTitle} </option>
                                         )
                                     )
                                 }
@@ -33,8 +40,8 @@ class Book extends Component {
                             </select>
                         </div>
                     </div>
-                    <div className="book-title">{title}</div>
-                    <div className="book-authors">{authors}</div>
+                    <div className="book-title">{bookInfo.title}</div>
+                    <div className="book-authors">{bookInfo.authors.join(', ')}</div>
                 </div>
             </li>
         )

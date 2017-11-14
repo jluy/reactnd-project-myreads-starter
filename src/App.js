@@ -25,57 +25,72 @@ class BooksApp extends React.Component {
 
   componentDidMount(){
       this.syncBookcaseWithRemote()
+      this.initForDev()
   }
 
-  syncBookcaseWithRemote(){
+  initForDev(){
+      BooksAPI.get("nggnmAEACAAJ").then(book => this.updateBookcase(book, "read"))
+      BooksAPI.get("sJf1vQAACAAJ").then(book => this.updateBookcase(book, "currentlyReading"))
+      BooksAPI.get("evuwdDLfAyYC").then(book => this.updateBookcase(book, "wantToRead"))
+      BooksAPI.get("74XNzF_al3MC").then(book => this.updateBookcase(book, "currentlyReading"))
+      BooksAPI.get("jAUODAAAQBAJ").then(book => this.updateBookcase(book, "currentlyReading"))
+      BooksAPI.get("IOejDAAAQBAJ").then(book => this.updateBookcase(book, "currentlyReading"))
+      BooksAPI.get("1wy49i-gQjIC").then(book => this.updateBookcase(book, "read"))
+  }
+
+  syncBookcaseWithRemote() {
       BooksAPI.getAll().then(
           remoteBooks => {
+              const myBookcase = this.createEmptyBookcase()
               remoteBooks.map( book => {
-                  const myBook = {
-                      "title": book.title,
-                      "authors": book.authors,
-                      "cover_location": book.imageLinks.thumbnail
-                  }
-                  const myBookcase = this.state.bookcase
+                  const myBook = this.createLocalBookObject(book)
                   myBookcase[book.shelf].books.push(myBook)
-                  this.setState({bookcase : myBookcase})
+                  return myBook
               })
-
+              this.setState({bookcase : myBookcase})
           }
       )
   }
 
-  updateBookcase(bookId, shelf){
-      BooksAPI.update(bookId, shelf).then(
-          // set the whole response into state
-          remoteBookcase => {
-              // For each shelf, get all the books
-              Object.keys(remoteBookcase).map( (remoteShelf) => {
-                  // For each book, get data
-                  remoteBookcase[remoteShelf].map(book => BooksAPI.get(book).then(remoteBook => {
-                      const myBook = {
-                          "title": remoteBook.title,
-                          "authors": remoteBook.authors,
-                          "cover_location": remoteBook.imageLinks.thumbnail
-                      }
-
-                      // Add the book to this.state.bookcase
-                      const myBookcase = this.state.bookcase
-                      myBookcase[remoteShelf].books.push(myBook)
-                      this.setState({bookcase : myBookcase})
-                      }
-                  ))
-                  }
-              )
+  createEmptyBookcase() {
+      return (
+          {
+              "currentlyReading": {
+                  "bookshelfTitle" : "Currently Reading",
+                  "books": []
+              },
+              "wantToRead": {
+                  "bookshelfTitle" : "Want to Read",
+                  "books": []
+              },
+              "read": {
+                  "bookshelfTitle" : "Read",
+                  "books": []
+              }
           }
       )
   }
 
+  createLocalBookObject = (book) => {
+      return (
+          {
+              "title": book.title,
+              "authors": book.authors,
+              "cover_location": book.imageLinks.thumbnail,
+              "id": book.id,
+              "shelfLocation": book.shelf
+          }
+      )
+  }
 
-
+  updateBookcase = (book, shelfName) => {
+      BooksAPI.update(book, shelfName).then(()=>this.syncBookcaseWithRemote())
+  }
 
   render() {
       const {bookcase} = this.state
+      // console.log("DBSession", BooksAPI.getDBSessionId)
+      // console.log("STATE: ", bookcase)
       return (
           <div className="app">
             <Route exact path="/" render={ () => (
@@ -89,9 +104,9 @@ class BooksApp extends React.Component {
                               <div key={bookcase[shelf].bookshelfTitle} >
                                   <Bookshelf
                                       bookshelfTitle={bookcase[shelf].bookshelfTitle}
-                                      bookshelf={shelf}
                                       books={bookcase[shelf].books}
                                       bookcase={bookcase}
+                                      onUpdateBookcase={this.updateBookcase}
                                   />
                               </div>
                           ))
