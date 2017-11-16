@@ -11,7 +11,7 @@ class Bookshelf extends Component {
     }
 
     render() {
-        const {bookshelfTitle, books, bookcase} = this.props
+        const {bookshelfTitle, books, bookcase, onUpdateBookcase} = this.props
         return (
             <div className="bookshelf">
                 <h2 className="bookshelf-title">{bookshelfTitle}</h2>
@@ -19,10 +19,10 @@ class Bookshelf extends Component {
                     <ol className="books-grid">
                         {books.map((book) => (
                             <Book
-                                bookInfo={book}
-                                key={book.title}
+                                book={book}
+                                key={book.id}
                                 bookcase={bookcase}
-                                onUpdateBookcase={this.props.onUpdateBookcase}
+                                onUpdateBookcase={onUpdateBookcase}
                             />
                         ))}
                     </ol>
